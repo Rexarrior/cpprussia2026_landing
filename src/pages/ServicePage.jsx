@@ -26,6 +26,68 @@ const serviceData = {
 | POST | /v1/user/authorization | Авторизация пользователя |
 | GET  | /v1/auth/public-key | Получить публичный ключ для верификации JWT |
 
+## Примеры запросов/ответов
+
+### POST /v1/user/registration
+
+**Request:**
+\`\`\`yaml
+{
+  "login": "ivanov",
+  "password": "securePassword123",
+  "name": "Иван Иванов",
+  "email": "ivanov@example.com",
+  "phone": "+79001234567"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "login": "ivanov",
+  "name": "Иван Иванов"
+}
+\`\`\`
+
+### POST /v1/user/authorization
+
+**Request:**
+\`\`\`yaml
+{
+  "login": "ivanov",
+  "password": "securePassword123"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "login": "ivanov",
+  "name": "Иван Иванов"
+}
+\`\`\`
+
+**Response (401):**
+\`\`\`yaml
+{
+  "error": "Invalid credentials",
+  "code": "AUTH_FAILED"
+}
+\`\`\`
+
+### GET /v1/auth/public-key
+
+**Response (200):**
+\`\`\`yaml
+{
+  "public_key": "-----BEGIN PUBLIC KEY-----\\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...",
+  "algorithm": "RS256",
+  "kid": "auth-service-key-1"
+}
+\`\`\`
+
 ## Схема данных
 
 - **V1Login** — уникальный login пользователя (string, min 3)
@@ -78,6 +140,68 @@ const serviceData = {
 |-------|----------|----------|
 | POST | /v1/user/status/update | Обновить свой статус |
 | POST | /v1/user/status/by-login | Получить статус пользователя |
+
+## Примеры запросов/ответов
+
+### POST /v1/user/status/update
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "status": {
+    "status_type": "online",
+    "status_message": "Working from home",
+    "visibility": "public"
+  }
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "success": true,
+  "updated_at": "2026-05-17T10:30:00Z",
+  "expires_at": null
+}
+\`\`\`
+
+### POST /v1/user/status/by-login
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "login": "petrov"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "status": {
+    "status_type": "busy",
+    "status_message": "На встрече",
+    "visibility": "public"
+  }
+}
+\`\`\`
+
+**Response (404):**
+\`\`\`yaml
+{
+  "error": "User not found",
+  "code": "USER_NOT_FOUND"
+}
+\`\`\`
 
 ## Схема данных
 
@@ -155,6 +279,84 @@ const serviceData = {
 | POST | /v1/channel/message/new | Отправить новое сообщение |
 | POST | /v1/channel/message/by-timestamp | Получить сообщения за период |
 
+## Примеры запросов/ответов
+
+### POST /v1/channel/message/new
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "channel_id": 1,
+  "message": "Привет! Как дела?"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "id": 42,
+  "timestamp": "2026-05-17T10:30:00Z",
+  "message": "Привет! Как дела?",
+  "current_user": {
+    "token": "",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  }
+}
+\`\`\`
+
+### POST /v1/channel/message/by-timestamp
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "channel_id": 1,
+  "from_timestamp": "2026-05-17T09:00:00Z",
+  "to_timestamp": "2026-05-17T11:00:00Z",
+  "limit": 50
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "messages": [
+    {
+      "id": 40,
+      "timestamp": "2026-05-17T09:15:00Z",
+      "message": "Доброе утро!",
+      "current_user": {
+        "token": "",
+        "login": "petrov",
+        "name": "Пётр Петров"
+      }
+    },
+    {
+      "id": 41,
+      "timestamp": "2026-05-17T10:30:00Z",
+      "message": "Привет! Как дела?",
+      "current_user": {
+        "token": "",
+        "login": "ivanov",
+        "name": "Иван Иванов"
+      }
+    }
+  ],
+  "next_cursor": "eyJpZCI6NDAsInRzIjoiMjAyNi0wNS0xN1QwOToxNTowMFoifQ==",
+  "has_more": false
+}
+\`\`\`
+
 ## Схема данных
 
 - **V1ChannelId** — ID канала (int64, предопределённые каналы)
@@ -208,6 +410,67 @@ const serviceData = {
 |-------|----------|----------|
 | POST | /v1/like/trigger | Добавить/убрать реакцию |
 | GET | /v1/like/{channel_id}/{message_id} | Получить все реакции на сообщение |
+
+## Примеры запросов/ответов
+
+### POST /v1/like/trigger
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "idempotency_token": "unique-token-12345678",
+  "channel_id": 1,
+  "message_id": 42,
+  "animation": "heart"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "action": "added",
+  "current_user_reaction": "heart"
+}
+\`\`\`
+
+Повторный запрос с тем же idempotency_token:
+\`\`\`yaml
+{
+  "action": "added",
+  "current_user_reaction": "heart"
+}
+\`\`\`
+
+### GET /v1/like/{channel_id}/{message_id}
+
+**Request:** \`GET /v1/like/1/42\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "reactions": [
+    {
+      "user": {
+        "login": "ivanov",
+        "name": "Иван Иванов"
+      },
+      "animation": "heart"
+    },
+    {
+      "user": {
+        "login": "petrov",
+        "name": "Пётр Петров"
+      },
+      "animation": "like"
+    }
+  ]
+}
+\`\`\`
 
 ## Схема данных
 
@@ -286,6 +549,83 @@ const serviceData = {
 | POST | /v1/channel/notification/new | Создать уведомление в канале |
 | POST | /v1/channel/notification/list | Получить список уведомлений в канале |
 | POST | /v1/channel/notification/read | Отметить уведомление как прочитанное |
+
+## Примеры запросов/ответов
+
+### POST /v1/channel/notification/new
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "channel_id": 1,
+  "message_id": 42,
+  "other_user_login": "petrov"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "notification_id": "550e8400-e29b-41d4-a716-446655440000"
+}
+\`\`\`
+
+### POST /v1/channel/notification/list
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "petrov",
+    "name": "Пётр Петров"
+  },
+  "channel_id": 1
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "notifications": [
+    {
+      "message_id": 42,
+      "read": false
+    },
+    {
+      "message_id": 38,
+      "read": true
+    }
+  ]
+}
+\`\`\`
+
+### POST /v1/channel/notification/read
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "petrov",
+    "name": "Пётр Петров"
+  },
+  "channel_id": 1,
+  "message_id": 42
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "ok": true
+}
+\`\`\`
 
 ## Схема данных
 
@@ -377,6 +717,99 @@ const serviceData = {
 | POST | /v1/file/new | Загрузить новый файл |
 | POST | /v1/file/by-uri | Получить файл по URI |
 | POST | /v1/file/list | Получить список метаданных файлов |
+
+## Примеры запросов/ответов
+
+### POST /v1/file/new
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "login": "ivanov",
+  "filename": "document.pdf",
+  "content": "JVBERi0xLjQK...",
+  "mime_type": "application/pdf",
+  "size": 102456
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "uri": "s3://files-bucket/abc123-def456",
+  "file": {
+    "login": "ivanov",
+    "filename": "document.pdf",
+    "content": "JVBERi0xLjQK...",
+    "mime_type": "application/pdf",
+    "size": 102456
+  }
+}
+\`\`\`
+
+### POST /v1/file/by-uri
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "petrov",
+    "name": "Пётр Петров"
+  },
+  "uri": "s3://files-bucket/abc123-def456"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "login": "ivanov",
+  "filename": "document.pdf",
+  "content": "JVBERi0xLjQK...",
+  "mime_type": "application/pdf",
+  "size": 102456
+}
+\`\`\`
+
+### POST /v1/file/list
+
+**Request:**
+\`\`\`yaml
+{
+  "current_user": {
+    "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "login": "ivanov",
+    "name": "Иван Иванов"
+  },
+  "login": "ivanov"
+}
+\`\`\`
+
+**Response (200):**
+\`\`\`yaml
+{
+  "files": [
+    {
+      "uri": "s3://files-bucket/abc123-def456",
+      "login": "ivanov",
+      "filename": "document.pdf",
+      "mime_type": "application/pdf",
+      "size": 102456
+    }
+  ]
+}
+\`\`\`
 
 ## Схема данных
 
