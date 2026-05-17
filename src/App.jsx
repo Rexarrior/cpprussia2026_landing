@@ -232,7 +232,7 @@ function HomePage() {
                   Фреймворк прозрачно решает проблему эффективного I/O. Операции, которые обычно приводят к приостановке потока выполнения, не приостанавливают его. Вместо этого поток обрабатывает другие запросы и возвращается к операции только когда гарантируется её немедленное выполнение.
                 </p>
                 <p class="text-lg text-gray-300 mb-6 leading-relaxed">
-                  userver используется в production такими компаниями как <strong class="text-white">2GIS</strong>, <strong class="text-white">Т-Банк</strong> и другими.
+                  userver используется в production такими компаниями как <strong class="text-white">2GIS</strong>, <strong class="text-white">Яндекс</strong>, <strong class="text-white">Т-Банк</strong> и другими.
                 </p>
                 <div class="flex flex-wrap gap-4 text-sm">
                   <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">PostgreSQL</span>
