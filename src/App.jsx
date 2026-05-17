@@ -226,11 +226,32 @@ function HomePage() {
             <TextBlock delay={300}>
               <div class="text-block-content">
                 <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                  <strong class="text-white">Приветствуем вас на воркшопе Userver!</strong>
+                </p>
+                <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                  Наша задача — познакомиться с <strong class="text-white">userver</strong> и получить удовольствие от современного программирования на C++.
+                </p>
+                <p class="text-lg text-gray-300 mb-6 leading-relaxed">
                   <strong class="text-white">userver</strong> — это современный open-source асинхронный C++ фреймворк с богатым набором абстракций для быстрого и удобного создания микросервисов, сервисов и утилит.
                 </p>
                 <p class="text-lg text-gray-300 mb-6 leading-relaxed">
                   Фреймворк прозрачно решает проблему эффективного I/O. Операции, которые обычно приводят к приостановке потока выполнения, не приостанавливают его. Вместо этого поток обрабатывает другие запросы и возвращается к операции только когда гарантируется её немедленное выполнение.
                 </p>
+                <div class="note-block mb-6">
+                  <strong>Мы рекомендуем писать с поддержкой ИИ.</strong> Userver — несмотря на то, что использует C++ — ИИ-френдли фреймворк.
+                </div>
+                <h3 class="text-xl font-medium mb-4 text-white">Порядок действий</h3>
+                <ol class="list-decimal list-inside space-y-3 text-gray-300 mb-6">
+                  <li>Познакомиться с задачей, изучить тестовый сервис в <code class="text-accent-orange">cpprussia2026_backend_template</code> у вас на компьютерах</li>
+                  <li>Если у вас не слишком много опыта в программировании с поддержкой ИИ, <a href="/ai-guide" class="text-accent-orange hover:underline">прочитать гайд</a></li>
+                  <li>Изучить спецификацию — сервисы, которые предстоит реализовать</li>
+                  <li>Реализовать с агентом сервис аутентификации, согласно рекомендациям из README. Посмотрите в <a href="/ai-guide" class="text-accent-orange hover:underline">гайде по ИИ</a>, как начать, если это вызывает затруднения!</li>
+                  <li>Запустите и посмотрите на фронт — с работающим сервисом аутентификации это становится возможным. Если не знаете как запустить, попросите агента сделать это за вас</li>
+                  <li>Обсудить с агентом план решения оставшейся части задачи. Не стесняйтесь корректировать его план: ИИ служит нам, а не наоборот 🙂 Сохраните план в отдельный файлик</li>
+                  <li>По-сервисно (каждый раз с чистого контекста в ИИ) реализуйте все сервисы</li>
+                  <li>Проверьте через фронтенд, что всё работает. Для этого можно зайти с двух аккаунтов (создайте себе аккаунты с помощью агента) и пописать сообщения сами себе. Проверить уведомления и реакции</li>
+                  <li>Позовите организатора проверить ваше решение и получите приз!</li>
+                </ol>
                 <p class="text-lg text-gray-300 mb-6 leading-relaxed">
                   userver используется в production такими компаниями как <strong class="text-white">2GIS</strong>, <strong class="text-white">Яндекс</strong>, <strong class="text-white">Т-Банк</strong> и другими.
                 </p>
@@ -306,6 +327,12 @@ function HomePage() {
 
           <Section title="Внеклассное чтение" description="Полезные ресурсы для изучения" delay={600}>
             <Grid>
+              <Card
+                number="🤖"
+                title="Гайд по работе с ИИ"
+                description="Как эффективно использовать AI-ассистентов в этом воркшопе"
+                link="/ai-guide"
+              />
               <Card
                 number="📚"
                 title="Документация userver"
