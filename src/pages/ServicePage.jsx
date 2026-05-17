@@ -491,24 +491,87 @@ V1FileResponse:
 
 const ServicePage = () => {
   const params = useParams();
-  const [content, setContent] = createSignal('');
-
-  onMount(() => {
-    const service = serviceData[params.service];
-    if (service) {
-      // Process markdown-like content with code blocks
-      let processed = service.content;
-      setContent(processed);
-    }
-  });
 
   const service = () => serviceData[params.service];
+
+  const renderMarkdown = (text) => {
+    // Split text into lines
+    const lines = text.split('\n');
+    const result = [];
+    let inTable = false;
+    let tableRows = [];
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // Check if this is a table row
+      if (line.startsWith('|')) {
+        // Check if it's a separator row (contains only --- and |)
+        if (!line.match(/^\|[\s-|]+\|$/)) {
+          // It's a data/header row
+          if (!inTable) {
+            inTable = true;
+            tableRows = [];
+          }
+          const cells = line.split('|').filter((_, idx) => idx > 0 && idx < line.split('|').length - 1);
+          tableRows.push(cells.map(c => c.trim()));
+        }
+      } else {
+        // Not a table row
+        if (inTable) {
+          // Close the table
+          const headerRow = tableRows[0];
+          const dataRows = tableRows.slice(1);
+
+          result.push('<table><thead><tr>' +
+            headerRow.map(c => `<th>${c}</th>`).join('') +
+            '</tr></thead><tbody>' +
+            dataRows.map(row => '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') +
+            '</tbody></table>'
+          );
+          inTable = false;
+          tableRows = [];
+        }
+
+        // Process non-table line
+        let processedLine = line
+          .replace(/^# (.+)$/, '<h1>$1</h1>')
+          .replace(/^## (.+)$/, '<h2>$1</h2>')
+          .replace(/^### (.+)$/, '<h3>$1</h3>')
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.+?)\*/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        if (processedLine.trim()) {
+          result.push(`<p>${processedLine}</p>`);
+        } else {
+          result.push('<br>');
+        }
+      }
+      i++;
+    }
+
+    // Handle table at end of content
+    if (inTable) {
+      const headerRow = tableRows[0];
+      const dataRows = tableRows.slice(1);
+
+      result.push('<table><thead><tr>' +
+        headerRow.map(c => `<th>${c}</th>`).join('') +
+        '</tr></thead><tbody>' +
+        dataRows.map(row => '<tr>' + row.map(c => `<td>${c}</td>`).join('') + '</tr>').join('') +
+        '</tbody></table>'
+      );
+    }
+
+    return result.join('');
+  };
 
   const renderContent = () => {
     const text = service()?.content || '';
     const parts = [];
     let remaining = text;
-    let codeBlockIndex = 0;
 
     while (remaining.length > 0) {
       const codeBlockMatch = remaining.match(/```(\w*)\n([\s\S]*?)```/);
@@ -557,20 +620,7 @@ const ServicePage = () => {
                 </div>
               ) : (
                 <div class="markdown-content" innerHTML={
-                  part.content
-                    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-                    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-                    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                    .replace(/`([^`]+)`/g, '<code>$1</code>')
-                    .replace(/^\| (.+) \|$/gm, (match, row) => {
-                      const cells = row.split(' | ');
-                      return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
-                    })
-                    .replace(/(<tr>.*<\/tr>)/gs, '<table>$1</table>')
-                    .replace(/\n\n/g, '</p><p>')
-                    .replace(/\n/g, '<br>')
+                  renderMarkdown(part.content)
                 } />
               )
             ))}
