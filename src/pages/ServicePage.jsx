@@ -28,53 +28,11 @@ const serviceData = {
 
 ## Схема данных
 
-\`\`\`yaml
-# V1Login — уникальный login пользователя
-V1Login:
-  type: string
-  minLength: 3
-
-# V1CurrentUser — данные пользователя без токена
-V1CurrentUser:
-  type: object
-  properties:
-    login:
-      type: string
-    name:
-      type: string
-
-# V1AuthorizedUser — авторизованный пользователь с JWT токеном
-V1AuthorizedUser:
-  type: object
-  properties:
-    login:
-      type: string
-    name:
-      type: string
-    token:
-      type: string
-
-# V1UserAuthorizationResponse — ответ с данными пользователя и токеном
-V1UserAuthorizationResponse:
-  type: object
-  properties:
-    user:
-      $ref: "#/V1AuthorizedUser"
-
-# V1PublicKeyResponse — публичный RSA ключ для верификации JWT
-V1PublicKeyResponse:
-  type: object
-  properties:
-    public_key:
-      type: string
-      description: PEM format
-    algorithm:
-      type: string
-      enum: [RS256]
-    kid:
-      type: string
-      description: Optional key ID
-\`\`\`
+- **V1Login** — уникальный login пользователя (string, min 3)
+- **V1CurrentUser** — данные пользователя без токена (login, name)
+- **V1AuthorizedUser** — авторизованный пользователь с JWT токеном (login, name, token)
+- **V1UserAuthorizationResponse** — ответ с данными пользователя и токеном
+- **V1PublicKeyResponse** — публичный RSA ключ для верификации JWT (public_key в PEM, algorithm, опциональный kid)
 
 ## Безопасность
 
@@ -111,59 +69,70 @@ V1PublicKeyResponse:
 
 ## Функциональность
 
-- **Получение статуса** — получить текущий статус пользователя
-- **Обновление статуса** — установить новый статус пользователя
-- **Список статусов** — получить список всех возможных статусов
+- **Обновление статуса** — установка статуса с типом и сообщением
+- **Получение статуса** — получение статуса по login пользователя
 
 ## API
 
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
-| GET | /v1/status/{user_id} | Получить статус пользователя |
-| PUT | /v1/status/{user_id} | Обновить статус пользователя |
-| GET | /v1/statuses | Получить список всех статусов |
+| POST | /v1/user/status/update | Обновить свой статус |
+| POST | /v1/user/status/by-login | Получить статус пользователя |
 
 ## Схема данных
 
-\`\`\`yaml
-# Status — статус пользователя
-Status:
-  type: object
-  properties:
-    user_id:
-      type: string
-    status:
-      type: string
-      enum: [online, away, busy, offline]
-    message:
-      type: string
-      description: Опциональное сообщение статуса
-    updated_at:
-      type: string
-      format: date-time
+### V1StatusType
+Тип статуса пользователя:
+- \`online\` — пользователь онлайн
+- \`away\` — пользователь отсутствует
+- \`busy\` — пользователь занят
+- \`offline\` — пользователь офлайн
 
-# StatusList — список статусов
-StatusList:
-  type: array
-  items:
-    $ref: "#/Status"
+### V1Visibility
+Видимость статуса:
+- \`public\` — статус виден всем
+- \`private\` — статус виден только владельцу
 
-# V1StatusResponse
-V1StatusResponse:
-  type: object
-  properties:
-    status:
-      $ref: "#/Status"
+### V1UserStatus
+\`\`\`json
+{
+  "status_type": "online",
+  "status_message": "Working from home",
+  "visibility": "public"
+}
 \`\`\`
+
+### V1UserStatusUpdateRequest
+- \`current_user\` — информация о текущем пользователе
+- \`status\` — объект V1UserStatus
+
+### V1UserStatusUpdateResponse
+- \`success\` — успешность операции
+- \`updated_at\` — время обновления статуса
+- \`expires_at\` — время истечения статуса (опционально)
+
+### V1UserStatusByLoginRequest
+- \`current_user\` — информация о текущем пользователе
+- \`login\` — login пользователя, чей статус запрашивается
+
+### V1UserStatusByLoginResponse
+- \`status\` — объект V1UserStatus
 
 ## HTTP Status Codes
 
 | Код | Описание |
 |-----|----------|
 | 200 | Успешный запрос |
-| 400 | Ошибка валидации |
-| 404 | Статус не найден |
-| 500 | Внутренняя ошибка сервера |`
+| 400 | Bad request — некорректный запрос |
+| 401 | Unauthorized — пользователь не аутентифицирован |
+| 403 | Forbidden — нет доступа к запрашиваемому ресурсу |
+| 404 | Not found — пользователь не найден |
+| 500 | Internal server error — внутренняя ошибка сервера |
+
+## Потенциальные проблемы
+
+- Нет TTL или automatic cleanup
+- Нет списка всех статусов`
   },
   'messaging-service': {
     title: 'messaging_service',
@@ -176,81 +145,49 @@ V1StatusResponse:
 
 ## Функциональность
 
-- **Каналы** — создание, получение списка, удаление каналов
-- **Сообщения** — отправка, получение, удаление сообщений
-- **Подписки** — подписка на каналы
+- **Отправка сообщений** — создание нового сообщения в канале
+- **Получение сообщений** — получение списка сообщений по timestamp-диапазону
 
 ## API
 
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
-| POST | /v1/channels | Создать канал |
-| GET | /v1/channels | Получить список каналов |
-| GET | /v1/channels/{channel_id} | Получить канал |
-| DELETE | /v1/channels/{channel_id} | Удалить канал |
-| POST | /v1/channels/{channel_id}/messages | Отправить сообщение |
-| GET | /v1/channels/{channel_id}/messages | Получить сообщения канала |
-| DELETE | /v1/messages/{message_id} | Удалить сообщение |
+| POST | /v1/channel/message/new | Отправить новое сообщение |
+| POST | /v1/channel/message/by-timestamp | Получить сообщения за период |
 
 ## Схема данных
 
-\`\`\`yaml
-# Channel — канал
-Channel:
-  type: object
-  properties:
-    id:
-      type: string
-    name:
-      type: string
-    description:
-      type: string
-    created_at:
-      type: string
-      format: date-time
-    owner_id:
-      type: string
+- **V1ChannelId** — ID канала (int64, предопределённые каналы)
+- **V1MessageId** — уникальный ID сообщения в канале (int64)
+- **V1CurrentUser** — информация о текущем пользователе (token, login, name)
+- **V1ChannelMessage** — структура сообщения (id, timestamp, message, current_user)
+- **V1Error** — структура ошибки (error, code)
 
-# Message — сообщение
-Message:
-  type: object
-  properties:
-    id:
-      type: string
-    channel_id:
-      type: string
-    sender_id:
-      type: string
-    content:
-      type: string
-    created_at:
-      type: string
-      format: date-time
+### Пагинация
 
-# V1ChannelResponse
-V1ChannelResponse:
-  type: object
-  properties:
-    channel:
-      $ref: "#/Channel"
+\`V1ChannelMessageByTimestampResponse\` содержит:
+- \`messages\` — массив сообщений
+- \`next_cursor\` — курсор для следующей страницы (null если нет больше результатов)
+- \`has_more\` — флаг наличия дополнительных сообщений
 
-# V1MessageResponse
-V1MessageResponse:
-  type: object
-  properties:
-    message:
-      $ref: "#/Message"
-\`\`\`
+### Формат timestamp
 
-## HTTP Status Codes
+Все поля timestamp используют формат ISO8601 (\`format: date-time\`).
+
+### HTTP Status Codes
 
 | Код | Описание |
 |-----|----------|
-| 200 | Успешный запрос |
-| 201 | Канал/сообщение создано |
-| 400 | Ошибка валидации |
-| 404 | Ресурс не найден |
-| 500 | Внутренняя ошибка сервера |`
+| 200 | Успешный ответ |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 404 | Channel Not Found |
+| 500 | Internal Server Error |
+
+## Потенциальные проблемы
+
+- Нет возможности создать канал (описание says "all IDs already exist")
+- Нет редактирования/удаления сообщений`
   },
   'reactions-service': {
     title: 'reactions_service',
@@ -263,70 +200,69 @@ V1MessageResponse:
 
 ## Функциональность
 
-- **Добавление реакции** — добавить реакцию к сообщению
-- **Удаление реакции** — удалить свою реакцию
-- **Получение реакций** — получить все реакции сообщения
+- **Toggle реакции** — добавление/удаление анимации на сообщение
 
 ## API
 
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
-| POST | /v1/messages/{message_id}/reactions | Добавить реакцию |
-| DELETE | /v1/messages/{message_id}/reactions/{reaction_id} | Удалить реакцию |
-| GET | /v1/messages/{message_id}/reactions | Получить реакции сообщения |
+| POST | /v1/like/trigger | Добавить/убрать реакцию |
+| GET | /v1/like/{channel_id}/{message_id} | Получить все реакции на сообщение |
 
 ## Схема данных
 
-\`\`\`yaml
-# Reaction — реакция на сообщение
-Reaction:
-  type: object
-  properties:
-    id:
-      type: string
-    message_id:
-      type: string
-    user_id:
-      type: string
-    type:
-      type: string
-      enum: [like, dislike]
-    created_at:
-      type: string
-      format: date-time
+### Enums
 
-# ReactionCount — количество реакций по типам
-ReactionCount:
-  type: object
-  properties:
-    likes:
-      type: integer
-    dislikes:
-      type: integer
+**V1Animation** — тип анимации:
+- \`like\` — лайк
+- \`dislike\` — дизлайк
+- \`heart\` — сердце
+- \`fire\` — огонь
+- \`okay\` — окей
+- \`LOL\` — смех
+- \`smile\` — улыбка
 
-# V1ReactionsResponse
-V1ReactionsResponse:
-  type: object
-  properties:
-    message_id:
-      type: string
-    reactions:
-      type: array
-      items:
-        $ref: "#/Reaction"
-    counts:
-      $ref: "#/ReactionCount"
-\`\`\`
+### Request/Response
+
+**V1LikeTriggerRequest** — запрос на toggle реакции:
+- \`current_user\` — информация о пользователе
+- \`idempotency_token\` — токен для идемпотентности (16-256 символов)
+- \`channel_id\` — ID канала
+- \`message_id\` — ID сообщения
+- \`animation\` — тип анимации
+
+**V1LikeTriggerResponse** — ответ после toggle:
+- \`action\` — результат: \`added\` | \`removed\`
+- \`current_user_reaction\` — текущая анимация пользователя на этом сообщении (null если нет)
+
+**V1GetReactionsResponse** — список реакций:
+- \`reactions\` — массив записей с \`user\` и \`animation\`
+
+## Idempotency Token
+
+Механизм toggle с idempotency_token:
+
+1. Если токен используется впервые — выполняется toggle (добавление или удаление в зависимости от текущего состояния)
+2. Если токен уже использовался для того же user+channel+message+animation:
+   - Возвращается текущее состояние **без изменений**
+   - Это позволяет безопасно повторять запросы
 
 ## HTTP Status Codes
 
 | Код | Описание |
 |-----|----------|
-| 200 | Успешный запрос |
-| 201 | Реакция создана |
-| 400 | Ошибка валидации |
-| 404 | Реакция не найдена |
-| 500 | Внутренняя ошибка сервера |`
+| 200 | Успех |
+| 400 | Некорректный запрос |
+| 401 | Неавторизован |
+| 404 | Сообщение не найдено |
+| 409 | Конфликт (idempotency token conflict) |
+
+## Потенциальные проблемы
+
+- [x] Добавлен response с состоянием после toggle
+- [x] Объяснён механизм idempotency_token
+- [x] Заменён "shit" на "fire"
+- [x] Добавлен endpoint для получения реакций`
   },
   'notifications-service': {
     title: 'notifications_service',
@@ -339,71 +275,85 @@ V1ReactionsResponse:
 
 ## Функциональность
 
-- **Создание уведомления** — создать уведомление о новом сообщении
-- **Получение уведомлений** — получить список уведомлений пользователя
-- **Пометка прочитанным** — пометить уведомление как прочитанное
+- **Создание уведомления** — оповещение другого пользователя о сообщении в рамках канала
+- **Получение списка уведомлений** — получение уведомлений пользователя в рамках конкретного канала (список сообщений и статус прочтения)
+- **Отметка уведомления как прочитанного** — пометить конкретное уведомление как прочитанное
 
 ## API
 
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
-| POST | /v1/notifications | Создать уведомление |
-| GET | /v1/notifications | Получить уведомления пользователя |
-| PUT | /v1/notifications/{notification_id}/read | Пометить как прочитанное |
-| DELETE | /v1/notifications/{notification_id} | Удалить уведомление |
+| POST | /v1/channel/notification/new | Создать уведомление в канале |
+| POST | /v1/channel/notification/list | Получить список уведомлений в канале |
+| POST | /v1/channel/notification/read | Отметить уведомление как прочитанное |
 
 ## Схема данных
 
-\`\`\`yaml
-# Notification — уведомление
-Notification:
-  type: object
-  properties:
-    id:
-      type: string
-    user_id:
-      type: string
-    channel_id:
-      type: string
-    message_id:
-      type: string
-    type:
-      type: string
-      enum: [new_message, mention, reaction]
-    is_read:
-      type: boolean
-    created_at:
-      type: string
-      format: date-time
+### V1ChannelNotificationNewRequest
 
-# V1NotificationResponse
-V1NotificationResponse:
-  type: object
-  properties:
-    notification:
-      $ref: "#/Notification"
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| current_user | object | Да | Текущий пользователь (token, login, name) |
+| channel_id | integer | Да | ID канала |
+| message_id | integer | Да | ID сообщения |
+| other_user_login | string | Да | Логин пользователя для уведомления |
 
-# V1NotificationListResponse
-V1NotificationListResponse:
-  type: object
-  properties:
-    notifications:
-      type: array
-      items:
-        $ref: "#/Notification"
-    unread_count:
-      type: integer
-\`\`\`
+### V1ChannelNotificationNewResponse
 
-## HTTP Status Codes
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| notification_id | UUID | Да | Уникальный ID созданного уведомления |
+
+### V1ChannelNotificationListRequest
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| current_user | object | Да | Текущий пользователь (token, login, name) |
+| channel_id | integer | Да | ID канала |
+
+### V1ChannelNotificationListResponse
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| notifications | array | Да | Массив уведомлений (message_id + read) |
+
+### V1ChannelNotificationReadRequest
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| current_user | object | Да | Текущий пользователь (token, login, name) |
+| channel_id | integer | Да | ID канала |
+| message_id | integer | Да | ID сообщения для отметки как прочитанного |
+
+### V1ChannelNotificationReadResponse
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| ok | boolean | Да | true если уведомление найдено и отмечено прочитанным |
+
+### V1CurrentUser
+
+| Поле | Тип | Обязательное | Описание |
+|------|-----|--------------|----------|
+| token | string | Нет | Токен авторизации (128 символов, пусто если не авторизован) |
+| login | string | Да | Логин пользователя |
+| name | string | Да | Читаемое имя пользователя |
+
+## Коды ошибок
 
 | Код | Описание |
 |-----|----------|
-| 200 | Успешный запрос |
-| 201 | Уведомление создано |
-| 400 | Ошибка валидации |
-| 404 | Уведомление не найдено |
-| 500 | Внутренняя ошибка сервера |`
+| 400 | Неверные параметры запроса |
+| 401 | Пользователь не аутентифицирован |
+| 403 | Нет прав на выполнение операции |
+| 404 | Ресурс не найден |
+| 500 | Внутренняя ошибка сервера |
+
+## Примечания
+
+- Уведомления являются уведомлениями в рамках канала (channel-scoped)
+- Для каждого уведомления хранится статус прочтения (read/unread)
+- Отметка как прочитанного выполняется оптимистично на фронтенде (UI обновляется немедленно)`
   },
   'files-service': {
     title: 'files_service',
@@ -412,80 +362,114 @@ V1NotificationListResponse:
     description: 'Сервис передачи файлов',
     content: `# Files Service
 
-Сервис передачи файлов.
+Сервис передачи файлов с возможностью обмена между пользователями.
 
 ## Функциональность
 
-- **Загрузка файла** — загрузить файл в систему
-- **Скачивание файла** — скачать файл по ID
-- **Удаление файла** — удалить файл
+- **Загрузка файла** — сохранение файла с получением URI
+- **Получение файла** — загрузка по URI (доступно любому авторизованному пользователю)
+- **Список файлов** — получение списка метаданных загруженных файлов, опционально с фильтром по владельцу
 
 ## API
 
 | Метод | Endpoint | Описание |
 |-------|----------|----------|
-| POST | /v1/files | Загрузить файл |
-| GET | /v1/files/{file_id} | Скачать файл |
-| DELETE | /v1/files/{file_id} | Удалить файл |
-| GET | /v1/files | Получить список файлов пользователя |
+| POST | /v1/file/new | Загрузить новый файл |
+| POST | /v1/file/by-uri | Получить файл по URI |
+| POST | /v1/file/list | Получить список метаданных файлов |
 
 ## Схема данных
 
-\`\`\`yaml
-# FileMetadata — метаданные файла
-FileMetadata:
-  type: object
-  properties:
-    id:
-      type: string
-    name:
-      type: string
-    size:
-      type: integer
-      description: Размер в байтах
-    content_type:
-      type: string
-      description: MIME type
-    uploader_id:
-      type: string
-    created_at:
-      type: string
-      format: date-time
-    storage_path:
-      type: string
-      description: Путь в хранилище
+### V1File
 
-# V1FileUploadResponse
-V1FileUploadResponse:
-  type: object
-  properties:
-    file:
-      $ref: "#/FileMetadata"
-    upload_url:
-      type: string
-      description: URL для загрузки (если используется presigned URL)
+| Поле | Тип | Описание |
+|------|-----|----------|
+| login | string | Идентификатор владельца файла |
+| filename | string | Имя файла |
+| content | string (base64) | Содержимое файла в Base64 |
+| mime_type | string | MIME тип файла (например, \`application/pdf\`) |
+| size | integer | Размер файла в байтах |
 
-# V1FileResponse
-V1FileResponse:
-  type: object
-  properties:
-    file:
-      $ref: "#/FileMetadata"
-    download_url:
-      type: string
-      description: URL для скачивания
-\`\`\`
+### V1FileNewRequest
+
+Поля совпадают с \`V1File\`; \`mime_type\` и \`size\` — опциональные.
+
+### V1FileNewResponse
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| current_user | V1CurrentUser | Информация о текущем пользователе |
+| uri | string | URI для доступа к файлу (формат: \`s3://bucket/path\`) |
+| file | V1File | Полная информация о загруженном файле |
+
+### V1FileByUriRequest
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| current_user | V1CurrentUser | Текущий пользователь (для проверки авторизации) |
+| uri | string | URI файла (\`s3://bucket/path\`) |
+
+### V1FileByUriResponse
+
+Ответ имеет плоскую структуру (поля совпадают с \`V1File\`, без обёртки в \`file\`).
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| login | string | Логин владельца файла |
+| filename | string | Имя файла |
+| content | string (base64) | Содержимое файла в Base64 |
+| mime_type | string (опц.) | MIME тип файла |
+| size | integer (опц.) | Размер файла в байтах |
+
+### V1FileMetadata
+
+Метаданные файла без содержимого (используется в списках).
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| uri | string | URI файла |
+| login | string | Логин владельца |
+| filename | string | Имя файла |
+| mime_type | string (опц.) | MIME тип |
+| size | integer (опц.) | Размер в байтах |
+
+### V1FileListRequest
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| current_user | V1CurrentUser | Текущий пользователь |
+| login | string (опц.) | Фильтр по владельцу. Если не указан — возвращаются файлы всех пользователей. |
+
+### V1FileListResponse
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| files | V1FileMetadata[] | Массив метаданных файлов |
+
+## Авторизация
+
+Любой авторизованный пользователь может:
+- скачать любой файл по его URI (\`POST /v1/file/by-uri\`);
+- получить список всех файлов (\`POST /v1/file/list\`).
+
+Это сделано намеренно для демонстрации обмена файлами в воркшопе.
 
 ## HTTP Status Codes
 
 | Код | Описание |
 |-----|----------|
 | 200 | Успешный запрос |
-| 201 | Файл загружен |
-| 400 | Ошибка валидации |
-| 404 | Файл не найден |
-| 413 | Файл слишком большой |
-| 500 | Внутренняя ошибка сервера |`
+| 400 | Bad request |
+| 401 | Unauthorized |
+| 404 | File not found |
+
+## URI Format
+
+URI имеет формат \`s3://bucket/path\`, где:
+- \`bucket\` — имя хранилища
+- \`path\` — путь к файлу
+
+Пример: \`s3://files-bucket/abc123-def456\``
   }
 };
 
@@ -495,7 +479,6 @@ const ServicePage = () => {
   const service = () => serviceData[params.service];
 
   const renderMarkdown = (text) => {
-    // Split text into lines
     const lines = text.split('\n');
     const result = [];
     let inTable = false;
@@ -505,11 +488,8 @@ const ServicePage = () => {
     while (i < lines.length) {
       const line = lines[i];
 
-      // Check if this is a table row
       if (line.startsWith('|')) {
-        // Check if it's a separator row (contains only --- and |)
         if (!line.match(/^\|[\s-|]+\|$/)) {
-          // It's a data/header row
           if (!inTable) {
             inTable = true;
             tableRows = [];
@@ -518,9 +498,7 @@ const ServicePage = () => {
           tableRows.push(cells.map(c => c.trim()));
         }
       } else {
-        // Not a table row
         if (inTable) {
-          // Close the table
           const headerRow = tableRows[0];
           const dataRows = tableRows.slice(1);
 
@@ -534,14 +512,15 @@ const ServicePage = () => {
           tableRows = [];
         }
 
-        // Process non-table line
         let processedLine = line
           .replace(/^# (.+)$/, '<h1>$1</h1>')
           .replace(/^## (.+)$/, '<h2>$1</h2>')
           .replace(/^### (.+)$/, '<h3>$1</h3>')
           .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
           .replace(/\*(.+?)\*/g, '<em>$1</em>')
-          .replace(/`([^`]+)`/g, '<code>$1</code>');
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\[x\]/g, '✓')
+          .replace(/\[ \]/g, '☐');
 
         if (processedLine.trim()) {
           result.push(`<p>${processedLine}</p>`);
@@ -552,7 +531,6 @@ const ServicePage = () => {
       i++;
     }
 
-    // Handle table at end of content
     if (inTable) {
       const headerRow = tableRows[0];
       const dataRows = tableRows.slice(1);
@@ -574,7 +552,7 @@ const ServicePage = () => {
     let remaining = text;
 
     while (remaining.length > 0) {
-      const codeBlockMatch = remaining.match(/```(\w*)\n([\s\S]*?)```/);
+      const codeBlockMatch = remaining.match(/```(\w*)\n?([\s\S]*?)```/);
 
       if (codeBlockMatch) {
         const before = remaining.substring(0, codeBlockMatch.index);
@@ -619,9 +597,7 @@ const ServicePage = () => {
                   <pre><code innerHTML={part.content} /></pre>
                 </div>
               ) : (
-                <div class="markdown-content" innerHTML={
-                  renderMarkdown(part.content)
-                } />
+                <div class="markdown-content" innerHTML={renderMarkdown(part.content)} />
               )
             ))}
           </div>
