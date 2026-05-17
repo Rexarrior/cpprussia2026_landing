@@ -321,7 +321,7 @@ function HomePage() {
               <Card
                 number="🚀"
                 title="Sourcecraft"
-                description="Курсы и обучающие материалы по C++"
+                description="Современные AI-кодагент"
                 link="https://sourcecraft.ru/"
               />
             </Grid>
