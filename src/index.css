@@ -288,3 +288,185 @@ body {
   border-radius: 0.25rem;
   font-size: 0.875rem;
 }
+
+/* Service Page Styles */
+.service-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ff8833;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.back-link:hover {
+  background: rgba(255, 136, 51, 0.1);
+  text-decoration: underline;
+}
+
+.service-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #2a2f38;
+}
+
+.service-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.meta-tag {
+  background: #191d24;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #9ca3af;
+  border: 1px solid #2a2f38;
+}
+
+.service-content {
+  line-height: 1.7;
+}
+
+.service-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+  color: #fff;
+}
+
+.service-content h1:first-child {
+  margin-top: 0;
+}
+
+.service-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 1.75rem 0 1rem;
+  color: #fff;
+}
+
+.service-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+  color: #fff;
+}
+
+.service-content p {
+  color: #d1d5db;
+  margin: 1rem 0;
+}
+
+.service-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+}
+
+.service-content td,
+.service-content th {
+  padding: 0.75rem 1rem;
+  border: 1px solid #2a2f38;
+  text-align: left;
+}
+
+.service-content th {
+  background: #191d24;
+  font-weight: 600;
+  color: #fff;
+}
+
+.service-content td {
+  color: #d1d5db;
+}
+
+.code-block-wrapper {
+  position: relative;
+  margin: 1.5rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #2a2f38;
+}
+
+.code-lang {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #2a2f38;
+  color: #9ca3af;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0 0.75rem 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.service-content pre {
+  background: #1e1e1e;
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 0;
+}
+
+.service-content code {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.markdown-content {
+  color: #d1d5db;
+}
+
+.markdown-content p {
+  margin: 1rem 0;
+}
+
+.markdown-content strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+.markdown-content em {
+  color: #d1d5db;
+}
+
+.markdown-content code {
+  background: rgba(255, 136, 51, 0.15);
+  color: #ff8833;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.not-found {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.not-found h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.not-found p {
+  color: #9ca3af;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

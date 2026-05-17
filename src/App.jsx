@@ -1,4 +1,5 @@
 import { createSignal, onMount } from 'solid-js';
+import { A } from '@solidjs/router';
 import './index.css';
 
 const Card = ({ number, title, description, link, icon }) => {
@@ -8,7 +9,7 @@ const Card = ({ number, title, description, link, icon }) => {
     setTimeout(() => setIsVisible(true), number * 100);
   });
 
-  return (
+  const content = (
     <div
       class={`card ${isVisible() ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
       style={{ 'transition-delay': `${number * 50}ms`, 'transition': 'all 0.3s ease' }}
@@ -25,30 +26,28 @@ const Card = ({ number, title, description, link, icon }) => {
       )}
     </div>
   );
+
+  return link ? (
+    <A href={link} class="block">
+      {content}
+    </A>
+  ) : content;
 };
 
 const Header = () => (
   <header class="px-6 py-8 border-b border-gray-800">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <a href="https://dev.go.yandex/">
+      <A href="/" class="flex items-center gap-4">
         <img
           src="https://vibecode-userver.lovable.app/lovable-uploads/2862a10c-9ced-498d-9ba3-6665969d884f.png"
           alt="Yandex"
           class="h-12"
         />
-      </a>
-
-      <a href="https://github.com/userver-framework/userver" class="flex items-center gap-4">
-        <img
-          src="https://vibecode-userver.lovable.app/lovable-uploads/ee3eb9a4-3837-4a97-b1e3-ab3288f8fb73.png"
-          alt="userver"
-          class="w-16 h-16"
-        />
         <div class="flex flex-col">
           <span class="text-2xl font-bold">userver</span>
           <span class="text-sm text-gray-400">C++ Async Framework</span>
         </div>
-      </a>
+      </A>
 
       <a
         href="https://userver.tech/"
@@ -138,16 +137,16 @@ const Grid2 = ({ children }) => (
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">{children}</div>
 );
 
-const TaskCard = ({ number, title, description, port }) => {
+const TaskCard = ({ number, title, description, port, link }) => {
   const [isVisible, setIsVisible] = createSignal(false);
 
   onMount(() => {
     setTimeout(() => setIsVisible(true), number * 100);
   });
 
-  return (
+  const cardContent = (
     <div
-      class={`card ${isVisible() ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+      class={`card cursor-pointer ${isVisible() ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
       style={{ 'transition-delay': `${number * 50}ms`, 'transition': 'all 0.3s ease' }}
     >
       <div class="flex items-start gap-4">
@@ -166,6 +165,12 @@ const TaskCard = ({ number, title, description, port }) => {
       </div>
     </div>
   );
+
+  return link ? (
+    <A href={link} class="block">
+      {cardContent}
+    </A>
+  ) : cardContent;
 };
 
 const Footer = () => (
@@ -182,7 +187,7 @@ const Footer = () => (
           </a>
           <a href="https://github.com/userver-framework/userver">
             <img
-              src="https://vibecode-userver.lovable.app/lovable-uploads/ee3eb9a4-3837-4a97-b1e3-ab3288f8fb73.png"
+              src="https://vibode-userver.lovable.app/lovable-uploads/ee3eb9a4-3837-4a97-b1e3-ab3288f8fb73.png"
               alt="userver"
               class="h-8 opacity-60 hover:opacity-100 transition-opacity"
             />
@@ -208,7 +213,7 @@ const Footer = () => (
   </footer>
 );
 
-function App() {
+function HomePage() {
   return (
     <div class="min-h-screen flex flex-col bg-bg-dark">
       <Header />
@@ -249,7 +254,7 @@ function App() {
                 Ваша задача — создать шесть микросервисов, которые вместе обеспечат работу мессенджера.
               </p>
               <p class="text-gray-400 text-sm mb-6">
-                Изучите структуру проекта, соберите фронтенд, реализуйте сервисы согласно документации в папке <code class="text-accent-orange">docs/</code>,
+                Изучите структуру проекта, соберите фронтенд, реализуйте сервисы согласно документации,
                 интегрируйте каждый сервис в общую систему и запустите весь стек.
               </p>
             </div>
@@ -259,36 +264,42 @@ function App() {
                 title="auth_service"
                 description="Аутентификация и авторизация пользователей"
                 port="8001"
+                link="/service/auth-service"
               />
               <TaskCard
                 number={2}
                 title="status_service"
                 description="Сервис пользовательских статусов"
                 port="8006"
+                link="/service/status-service"
               />
               <TaskCard
                 number={3}
                 title="messaging_service"
                 description="Сервис работы с каналами и сообщениями"
                 port="8002"
+                link="/service/messaging-service"
               />
               <TaskCard
                 number={4}
                 title="reactions_service"
                 description="Сервис реакций (лайков/дизлайков) на сообщения"
                 port="8005"
+                link="/service/reactions-service"
               />
               <TaskCard
                 number={5}
                 title="notifications_service"
                 description="Сервис уведомлений о сообщениях в рамках каналов"
                 port="8003"
+                link="/service/notifications-service"
               />
               <TaskCard
                 number={6}
                 title="files_service"
                 description="Сервис передачи файлов"
                 port="8004"
+                link="/service/files-service"
               />
             </Grid2>
           </Section>
@@ -323,4 +334,4 @@ function App() {
   );
 }
 
-export default App;
+export default HomePage;
