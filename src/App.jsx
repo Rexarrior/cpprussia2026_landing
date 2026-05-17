@@ -20,7 +20,7 @@ const Card = ({ number, title, description, link, icon }) => {
       <p class="text-gray-400 text-sm mb-4">{description}</p>
       {link && (
         <a href={link} class="text-accent-orange hover:underline text-sm">
-          {link.includes('demo') || link === '#' ? 'Посмотреть демо' : 'Читать'} →
+          {link.includes('demo') || link === '#' ? 'Посмотреть демо' : 'Открыть'} →
         </a>
       )}
     </div>
@@ -113,9 +113,60 @@ const Section = ({ title, description, children, delay = 0 }) => {
   );
 };
 
+const TextBlock = ({ children, delay = 0 }) => {
+  const [isVisible, setIsVisible] = createSignal(false);
+
+  onMount(() => {
+    setTimeout(() => setIsVisible(true), delay);
+  });
+
+  return (
+    <div
+      class={`text-block ${isVisible() ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+      style={{ 'transition': 'all 0.5s ease' }}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Grid = ({ children }) => (
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">{children}</div>
 );
+
+const Grid2 = ({ children }) => (
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">{children}</div>
+);
+
+const TaskCard = ({ number, title, description, port }) => {
+  const [isVisible, setIsVisible] = createSignal(false);
+
+  onMount(() => {
+    setTimeout(() => setIsVisible(true), number * 100);
+  });
+
+  return (
+    <div
+      class={`card ${isVisible() ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}
+      style={{ 'transition-delay': `${number * 50}ms`, 'transition': 'all 0.3s ease' }}
+    >
+      <div class="flex items-start gap-4">
+        <div class="badge shrink-0">
+          {number}
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xl font-medium mb-2">{title}</h3>
+          <p class="text-gray-400 text-sm mb-3">{description}</p>
+          {port && (
+            <span class="inline-block text-xs text-gray-500 bg-bg-dark px-2 py-1 rounded">
+              Порт: {port}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Footer = () => (
   <footer class="bg-bg-card border-t border-gray-800 py-8 mt-auto">
@@ -166,68 +217,101 @@ function App() {
         <div class="max-w-7xl mx-auto">
           <Hero />
 
-          <Section title="Знакомство" description="Базовые концепции и архитектура фреймворка" delay={200}>
-            <Grid>
-              <Card
-                number={1}
-                title="Введение в userver"
-                description="Что такое асинхронное программирование и зачем оно нужно"
-              />
-              <Card
-                number={2}
-                title="Архитектура"
-                description="Компоненты системы и их взаимодействие"
-              />
-              <Card
-                number={3}
-                title="Первое приложение"
-                description="Создаём простой HTTP-сервис"
-              />
-            </Grid>
+          <Section title="Знакомство" delay={200}>
+            <TextBlock delay={300}>
+              <div class="text-block-content">
+                <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                  <strong class="text-white">userver</strong> — это современный open-source асинхронный C++ фреймворк с богатым набором абстракций для быстрого и удобного создания микросервисов, сервисов и утилит.
+                </p>
+                <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                  Фреймворк прозрачно решает проблему эффективного I/O. Операции, которые обычно приводят к приостановке потока выполнения, не приостанавливают его. Вместо этого поток обрабатывает другие запросы и возвращается к операции только когда гарантируется её немедленное выполнение.
+                </p>
+                <p class="text-lg text-gray-300 mb-6 leading-relaxed">
+                  userver используется в production такими компаниями как <strong class="text-white">2GIS</strong>, <strong class="text-white">Т-Банк</strong> и другими.
+                </p>
+                <div class="flex flex-wrap gap-4 text-sm">
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">PostgreSQL</span>
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">MongoDB</span>
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">Redis</span>
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">ClickHouse</span>
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">gRPC</span>
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">HTTP/2</span>
+                  <span class="text-gray-400 bg-bg-card px-3 py-2 rounded-lg border border-gray-800">Kafka</span>
+                </div>
+              </div>
+            </TextBlock>
           </Section>
 
-          <Section title="Задачи" description="Практические задания для закрепления материала" delay={400}>
-            <Grid>
-              <Card
+          <Section title="Задача" description="Реализуйте 6 микросервисов мессенджера на фреймворке userver" delay={400}>
+            <div class="mb-8">
+              <p class="text-gray-300 mb-6">
+                Перед вами проект мессенджера с готовым фронтендом, но без реализованного бекенда.
+                Ваша задача — создать шесть микросервисов, которые вместе обеспечат работу мессенджера.
+              </p>
+              <p class="text-gray-400 text-sm mb-6">
+                Изучите структуру проекта, соберите фронтенд, реализуйте сервисы согласно документации в папке <code class="text-accent-orange">docs/</code>,
+                интегрируйте каждый сервис в общую систему и запустите весь стек.
+              </p>
+            </div>
+            <Grid2>
+              <TaskCard
                 number={1}
-                title="Pastebin-сервис"
-                description="Загрузка текста и получение уникальной ссылки"
-                link="#"
+                title="auth_service"
+                description="Аутентификация и авторизация пользователей"
+                port="8001"
               />
-              <Card
+              <TaskCard
                 number={2}
-                title="URL Shortener"
-                description="Генерация коротких ссылок с перенаправлением"
-                link="#"
+                title="status_service"
+                description="Сервис пользовательских статусов"
+                port="8006"
               />
-              <Card
+              <TaskCard
                 number={3}
-                title="Simple ToDo API"
-                description="Управление списком задач (добавление, удаление, изменение)"
-                link="#"
+                title="messaging_service"
+                description="Сервис работы с каналами и сообщениями"
+                port="8002"
               />
-            </Grid>
+              <TaskCard
+                number={4}
+                title="reactions_service"
+                description="Сервис реакций (лайков/дизлайков) на сообщения"
+                port="8005"
+              />
+              <TaskCard
+                number={5}
+                title="notifications_service"
+                description="Сервис уведомлений о сообщениях в рамках каналов"
+                port="8003"
+              />
+              <TaskCard
+                number={6}
+                title="files_service"
+                description="Сервис передачи файлов"
+                port="8004"
+              />
+            </Grid2>
           </Section>
 
-          <Section title="Внеклассное чтение" description="Дополнительные материалы для самостоятельного изучения" delay={600}>
+          <Section title="Внеклассное чтение" description="Полезные ресурсы для изучения" delay={600}>
             <Grid>
               <Card
                 number="📚"
-                title="Документация"
-                description="Официальная документация userver"
+                title="Документация userver"
+                description="Официальная документация, учебники и API reference"
                 link="https://userver.tech/"
               />
               <Card
                 number="🐙"
                 title="GitHub"
-                description="Исходный код и примеры"
+                description="Исходный код, примеры и issues"
                 link="https://github.com/userver-framework/userver"
               />
               <Card
-                number="💬"
-                title="Telegram"
-                description="Русскоязычное сообщество"
-                link="https://t.me/userver_ru"
+                number="🚀"
+                title="Sourcecraft"
+                description="Курсы и обучающие материалы по C++"
+                link="https://sourcecraft.ru/"
               />
             </Grid>
           </Section>
