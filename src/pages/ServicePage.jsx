@@ -1034,6 +1034,9 @@ const ServicePage = () => {
               )
             ))}
           </div>
+          <div class="note-block mt-8">
+            <strong>Важно:</strong> Полная версия спецификации доступна в папке <code>docs/</code> в репозитории <code>cpprussia2026_backend_template</code>. Эта страница содержит краткую выдержку для ознакомления; <code>docs/</code> является конечным источником истины.
+          </div>
         </>
       ) : (
         <div class="not-found">
